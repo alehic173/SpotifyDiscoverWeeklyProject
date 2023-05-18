@@ -29,4 +29,5 @@ Step Four: List Discover Weekly track uris and save them to a list. Take that li
 Necessary Beginning Steps
 <br>
 a  Create app in spotify for developers [dashboard](https://developer.spotify.com/dashboard)
+<br>
 b  modify redirect url to match server http... +'/redirect'
