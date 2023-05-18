@@ -49,10 +49,47 @@ def save_discover_weekly():
         print('User not logged in')
         # redirect user back to home page
         return redirect('/')
-    sp = spotify.Spotify(auth=token_info['access_token'])
-  
-    return('OAUTH SUCCESSFUL')
-
+    
+    # create Spotipy instance with access token
+    sp = spotipy.Spotify(auth=token_info['access_token'])
+    saved_weekly_playlist_id = None
+    discover_weekly_playlist_id = None
+    username = sp.current_user()['id']
+    
+    # calls api endpoint Current User Playlist
+    # Get all playlists
+    current_playlists = sp.current_user_playlists()['items']
+    
+    # loop through playlists to get Discover Weekly ID and Saved Weekly (new playlist) id
+    for playlist in current_playlists:
+        if( playlist['name'] == "Discover Weekly"):
+            discover_weekly_playlist_id = playlist['id']
+        if (playlist['name'] == "Saved Weekly"):
+            saved_weekly_playlist_id = playlist['id']
+   
+    
+    # check if playlists exist. If Saved Weekly playlist does not exist, create it
+    if not discover_weekly_playlist_id:
+        return 'Discover Weekly Playlist Not Found'
+    if not saved_weekly_playlist_id:
+        new_playlist = sp.user_playlist_create(username, 'Saved Weekly', True)
+        saved_weekly_playlist_id = new_playlist['id']
+    
+    # get songs of discover weekly playlist
+    discover_weekly_playlist = sp.playlist_items(discover_weekly_playlist_id)
+    
+    song_uris = []
+    # Create list of song uris from discover weekly playlist
+    for song in discover_weekly_playlist['items']:
+        
+        song_uri = song['track']['uri']
+        song_uris.append(song_uri)
+    
+    sp.user_playlist_add_tracks(username,saved_weekly_playlist_id, song_uris)
+        
+        
+    return "SUCCESS!!!!!!!!"
+    
 # function to get token info when needed
 def get_token():
     token_info = session.get(TOKEN_info, None)
@@ -68,13 +105,14 @@ def get_token():
     if(is_expired):
         spotify_oauth = create_oauth()
         token_info = spotify_oauth.refresh_access_token(token_info['refresh_token'])
-        return token_info
+    return token_info
     
 # Create the spotify OAuth
-def create_oauth():
-    return SpotifyOAuth(client_id = 'INSERT CLIENT ID', client_secret = 'INSERT SECRET ID',
-                        redirect_uri = url_for('redirect_page', _external=True), 
-                        scope = 'user-library-read playlist-modify-public playlist-modify-private')
+
+# def create_oauth():
+#     return SpotifyOAuth(client_id = 'INSERT CLIENT ID', client_secret = 'INSERT SECRET ID',
+#                         redirect_uri = url_for('redirect_page', _external=True), 
+#                         scope = 'user-library-read playlist-modify-public playlist-modify-private')
 
 
 flask_app.run(debug=True)
