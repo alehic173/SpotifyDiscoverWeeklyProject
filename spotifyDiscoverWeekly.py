@@ -77,20 +77,46 @@ def save_discover_weekly():
     
     # get songs of discover weekly playlist
     discover_weekly_playlist = sp.playlist_items(discover_weekly_playlist_id)
-    
+    saved_weekly_playlist = sp.playlist_items(saved_weekly_playlist_id)
     song_uris = []
+
+    duplicate_songs = []
+
     # Create list of song uris from discover weekly playlist
-    for song in discover_weekly_playlist['items']:
-        
-        song_uri = song['track']['uri']
+    for discover_song in discover_weekly_playlist['items']:
+        print(discover_weekly_playlist['items'])
+        song_uri = discover_song['track']['uri']
         song_uris.append(song_uri)
+        for saved_song in saved_weekly_playlist['items']:
+            if discover_song['track']['name'] == saved_song['track']['name']:
+                print(str(discover_song['track']['uri']))
+                print(str(saved_song['track']['uri']))
+                # song_uris.remove(song_uri)
+                
+            
+    sp.user_playlist_remove_all_occurrences_of_tracks(username,saved_weekly_playlist_id, song_uris)
+            
     
-    sp.user_playlist_add_tracks(username,saved_weekly_playlist_id, song_uris)
         
-        
-    return "SUCCESS!!!!!!!!"
+     
+            
+    # sp.user_playlist_add_tracks(username,saved_weekly_playlist_id, song_uris)
+    # sp.user_playlist_add_tracks(user, playlist_id, tracks)  
+    # # Delete duplicate songs
+    # seen = []
+    # duplicate_songs = []
+    # for song in saved_weekly_playlist['items']:
+    #     if song['track']['uri'] in seen:
+    #         duplicate_songs.append(song['track']['uri'])
+    #         sp.user_playlist_remove_specific_occurrences_of_tracks(username, saved_weekly_playlist_id, song['track']['uri'])  
+    #     else:
+    #         seen.append(song['track']['uri']) 
+    # print(str(duplicate_songs))        
+          
+     
+    return "success"
     
-# function to get token info when needed
+# function to get token info when neededu
 def get_token():
     token_info = session.get(TOKEN_info, None)
     # if token doesn't exist
@@ -107,7 +133,6 @@ def get_token():
         token_info = spotify_oauth.refresh_access_token(token_info['refresh_token'])
     return token_info
     
-# Create the spotify OAuth
 
 # def create_oauth():
 #     return SpotifyOAuth(client_id = 'INSERT CLIENT ID', client_secret = 'INSERT SECRET ID',
